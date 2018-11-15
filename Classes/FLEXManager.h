@@ -11,9 +11,13 @@
 
 typedef UIViewController *(^FLEXCustomContentViewerFuture)(NSData *data);
 
+extern BOOL FLEXManagerDevReleaseMode;
+
 @interface FLEXManager : NSObject
 
 + (instancetype)sharedManager;
+
+@property (nonatomic, assign) BOOL devReleaseMode;
 
 @property (nonatomic, readonly) BOOL isHidden;
 

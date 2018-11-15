@@ -18,11 +18,15 @@
 #import "FLEXFileBrowserTableViewController.h"
 #import "FLEXNetworkHistoryTableViewController.h"
 #import "FLEXKeyboardHelpViewController.h"
+#import "FLEXFileBrowserTableViewController.h"
+
+BOOL FLEXManagerDevReleaseMode = NO;
 
 @interface FLEXManager () <FLEXWindowEventDelegate, FLEXExplorerViewControllerDelegate>
 
 @property (nonatomic, strong) FLEXWindow *explorerWindow;
 @property (nonatomic, strong) FLEXExplorerViewController *explorerViewController;
+@property (nonatomic, strong) FLEXFileBrowserTableViewController *fileBrowserTableViewController;
 
 @property (nonatomic, readonly, strong) NSMutableArray<FLEXGlobalsTableViewControllerEntry *> *userGlobalEntries;
 @property (nonatomic, readonly, strong) NSMutableDictionary<NSString *, FLEXCustomContentViewerFuture> *customContentTypeViewers;
@@ -47,6 +51,8 @@
     if (self) {
         _userGlobalEntries = [NSMutableArray array];
         _customContentTypeViewers = [NSMutableDictionary dictionary];
+        
+        [self registerDefaultSimulatorShortcuts];
     }
     return self;
 }
@@ -185,74 +191,78 @@
         [self.explorerViewController toggleMenuTool];
     } description:@"Toggle FLEX globals menu"];
     
-    [self registerSimulatorShortcutWithKey:@"v" modifiers:0 action:^{
-        [self showExplorerIfNeeded];
-        [self.explorerViewController toggleViewsTool];
-    } description:@"Toggle view hierarchy menu"];
-    
-    [self registerSimulatorShortcutWithKey:@"s" modifiers:0 action:^{
-        [self showExplorerIfNeeded];
-        [self.explorerViewController toggleSelectTool];
-    } description:@"Toggle select tool"];
-    
-    [self registerSimulatorShortcutWithKey:@"m" modifiers:0 action:^{
-        [self showExplorerIfNeeded];
-        [self.explorerViewController toggleMoveTool];
-    } description:@"Toggle move tool"];
-    
-    [self registerSimulatorShortcutWithKey:@"n" modifiers:0 action:^{
-        [self toggleTopViewControllerOfClass:[FLEXNetworkHistoryTableViewController class]];
-    } description:@"Toggle network history view"];
-    
-    [self registerSimulatorShortcutWithKey:UIKeyInputDownArrow modifiers:0 action:^{
-        if ([self isHidden]) {
-            [self tryScrollDown];
-        } else {
-            [self.explorerViewController handleDownArrowKeyPressed];
-        }
-    } description:@"Cycle view selection\n\t\tMove view down\n\t\tScroll down"];
-    
-    [self registerSimulatorShortcutWithKey:UIKeyInputUpArrow modifiers:0 action:^{
-        if ([self isHidden]) {
-            [self tryScrollUp];
-        } else {
-            [self.explorerViewController handleUpArrowKeyPressed];
-        }
-    } description:@"Cycle view selection\n\t\tMove view up\n\t\tScroll up"];
-    
-    [self registerSimulatorShortcutWithKey:UIKeyInputRightArrow modifiers:0 action:^{
-        if (![self isHidden]) {
-            [self.explorerViewController handleRightArrowKeyPressed];
-        }
-    } description:@"Move selected view right"];
-    
-    [self registerSimulatorShortcutWithKey:UIKeyInputLeftArrow modifiers:0 action:^{
-        if ([self isHidden]) {
-            [self tryGoBack];
-        } else {
-            [self.explorerViewController handleLeftArrowKeyPressed];
-        }
-    } description:@"Move selected view left"];
-    
-    [self registerSimulatorShortcutWithKey:@"?" modifiers:0 action:^{
-        [self toggleTopViewControllerOfClass:[FLEXKeyboardHelpViewController class]];
-    } description:@"Toggle (this) help menu"];
-    
-    [self registerSimulatorShortcutWithKey:UIKeyInputEscape modifiers:0 action:^{
-        [[[self topViewController] presentingViewController] dismissViewControllerAnimated:YES completion:nil];
-    } description:@"End editing text\n\t\tDismiss top view controller"];
-    
-    [self registerSimulatorShortcutWithKey:@"o" modifiers:UIKeyModifierCommand|UIKeyModifierShift action:^{
-        [self toggleTopViewControllerOfClass:[FLEXFileBrowserTableViewController class]];
-    } description:@"Toggle file browser menu"];
+    if (_devReleaseMode == YES)
+    {
+        [self registerSimulatorShortcutWithKey:@"o" modifiers:UIKeyModifierCommand|UIKeyModifierShift action:^{
+            [self toggleTopViewControllerOfClass:[FLEXFileBrowserTableViewController class]];
+        } description:@"Toggle file browser menu"];
+    }
+    else
+    {
+        [self registerSimulatorShortcutWithKey:@"v" modifiers:0 action:^{
+            [self showExplorerIfNeeded];
+            [self.explorerViewController toggleViewsTool];
+        } description:@"Toggle view hierarchy menu"];
+        
+        [self registerSimulatorShortcutWithKey:@"s" modifiers:0 action:^{
+            [self showExplorerIfNeeded];
+            [self.explorerViewController toggleSelectTool];
+        } description:@"Toggle select tool"];
+        
+        [self registerSimulatorShortcutWithKey:@"m" modifiers:0 action:^{
+            [self showExplorerIfNeeded];
+            [self.explorerViewController toggleMoveTool];
+        } description:@"Toggle move tool"];
+        
+        [self registerSimulatorShortcutWithKey:@"n" modifiers:0 action:^{
+            [self toggleTopViewControllerOfClass:[FLEXNetworkHistoryTableViewController class]];
+        } description:@"Toggle network history view"];
+        
+        [self registerSimulatorShortcutWithKey:UIKeyInputDownArrow modifiers:0 action:^{
+            if ([self isHidden]) {
+                [self tryScrollDown];
+            } else {
+                [self.explorerViewController handleDownArrowKeyPressed];
+            }
+        } description:@"Cycle view selection\n\t\tMove view down\n\t\tScroll down"];
+        
+        [self registerSimulatorShortcutWithKey:UIKeyInputUpArrow modifiers:0 action:^{
+            if ([self isHidden]) {
+                [self tryScrollUp];
+            } else {
+                [self.explorerViewController handleUpArrowKeyPressed];
+            }
+        } description:@"Cycle view selection\n\t\tMove view up\n\t\tScroll up"];
+        
+        [self registerSimulatorShortcutWithKey:UIKeyInputRightArrow modifiers:0 action:^{
+            if (![self isHidden]) {
+                [self.explorerViewController handleRightArrowKeyPressed];
+            }
+        } description:@"Move selected view right"];
+        
+        [self registerSimulatorShortcutWithKey:UIKeyInputLeftArrow modifiers:0 action:^{
+            if ([self isHidden]) {
+                [self tryGoBack];
+            } else {
+                [self.explorerViewController handleLeftArrowKeyPressed];
+            }
+        } description:@"Move selected view left"];
+        
+        [self registerSimulatorShortcutWithKey:@"?" modifiers:0 action:^{
+            [self toggleTopViewControllerOfClass:[FLEXKeyboardHelpViewController class]];
+        } description:@"Toggle (this) help menu"];
+        
+        [self registerSimulatorShortcutWithKey:UIKeyInputEscape modifiers:0 action:^{
+            [[[self topViewController] presentingViewController] dismissViewControllerAnimated:YES completion:nil];
+        } description:@"End editing text\n\t\tDismiss top view controller"];
+    }    
 }
 
-+ (void)load
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[[self class] sharedManager] registerDefaultSimulatorShortcuts];
-    });
-}
+//+ (void)load
+//{
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//    });
+//}
 
 #pragma mark - Extensions
 

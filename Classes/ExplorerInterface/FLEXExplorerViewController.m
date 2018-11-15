@@ -15,6 +15,7 @@
 #import "FLEXObjectExplorerViewController.h"
 #import "FLEXObjectExplorerFactory.h"
 #import "FLEXNetworkHistoryTableViewController.h"
+#import "FLEXManager.h"
 
 static NSString *const kFLEXToolbarTopMarginDefaultsKey = @"com.flex.FLEXToolbar.topMargin";
 
@@ -846,40 +847,52 @@ typedef NS_ENUM(NSUInteger, FLEXExplorerMode) {
 
 - (void)toggleSelectTool
 {
-    if (self.currentMode == FLEXExplorerModeSelect) {
-        self.currentMode = FLEXExplorerModeDefault;
-    } else {
-        self.currentMode = FLEXExplorerModeSelect;
+    if (FLEXManagerDevReleaseMode == NO)
+    {
+        if (self.currentMode == FLEXExplorerModeSelect) {
+            self.currentMode = FLEXExplorerModeDefault;
+        } else {
+            self.currentMode = FLEXExplorerModeSelect;
+        }
     }
 }
 
 - (void)toggleMoveTool
 {
-    if (self.currentMode == FLEXExplorerModeMove) {
-        self.currentMode = FLEXExplorerModeDefault;
-    } else {
-        self.currentMode = FLEXExplorerModeMove;
+    if (FLEXManagerDevReleaseMode == NO)
+    {
+        if (self.currentMode == FLEXExplorerModeMove) {
+            self.currentMode = FLEXExplorerModeDefault;
+        } else {
+            self.currentMode = FLEXExplorerModeMove;
+        }
     }
 }
 
 - (void)toggleViewsTool
 {
-    [self toggleViewsToolWithCompletion:nil];
+    if (FLEXManagerDevReleaseMode == NO)
+    {
+        [self toggleViewsToolWithCompletion:nil];
+    }
 }
 
 - (void)toggleViewsToolWithCompletion:(void(^)(void))completion
 {
-    [self toggleToolWithViewControllerProvider:^UIViewController *{
-        NSArray<UIView *> *allViews = [self allViewsInHierarchy];
-        NSDictionary *depthsForViews = [self hierarchyDepthsForViews:allViews];
-        FLEXHierarchyTableViewController *hierarchyTVC = [[FLEXHierarchyTableViewController alloc] initWithViews:allViews viewsAtTap:self.viewsAtTapPoint selectedView:self.selectedView depths:depthsForViews];
-        hierarchyTVC.delegate = self;
-        return [[UINavigationController alloc] initWithRootViewController:hierarchyTVC];
-    } completion:^{
-        if (completion) {
-            completion();
-        }
-    }];
+    if (FLEXManagerDevReleaseMode == NO)
+    {
+        [self toggleToolWithViewControllerProvider:^UIViewController *{
+            NSArray<UIView *> *allViews = [self allViewsInHierarchy];
+            NSDictionary *depthsForViews = [self hierarchyDepthsForViews:allViews];
+            FLEXHierarchyTableViewController *hierarchyTVC = [[FLEXHierarchyTableViewController alloc] initWithViews:allViews viewsAtTap:self.viewsAtTapPoint selectedView:self.selectedView depths:depthsForViews];
+            hierarchyTVC.delegate = self;
+            return [[UINavigationController alloc] initWithRootViewController:hierarchyTVC];
+        } completion:^{
+            if (completion) {
+                completion();
+            }
+        }];
+    }
 }
 
 - (void)toggleMenuTool

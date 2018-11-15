@@ -19,6 +19,7 @@
 #import "FLEXManager+Private.h"
 #import "FLEXSystemLogTableViewController.h"
 #import "FLEXNetworkHistoryTableViewController.h"
+#import "FLEXManager.h"
 
 static __weak UIWindow *s_applicationWindow = nil;
 
@@ -56,166 +57,185 @@ typedef NS_ENUM(NSUInteger, FLEXGlobalsRow) {
     for (FLEXGlobalsRow defaultRowIndex = 0; defaultRowIndex < FLEXGlobalsRowCount; defaultRowIndex++) {
         FLEXGlobalsTableViewControllerEntryNameFuture titleFuture = nil;
         FLEXGlobalsTableViewControllerViewControllerFuture viewControllerFuture = nil;
-
-        switch (defaultRowIndex) {
-            case FLEXGlobalsRowAppClasses:
-                titleFuture = ^NSString *{
-                    return [NSString stringWithFormat:@"📕  %@ Classes", [FLEXUtility applicationName]];
-                };
-                viewControllerFuture = ^UIViewController *{
-                    FLEXClassesTableViewController *classesViewController = [[FLEXClassesTableViewController alloc] init];
-                    classesViewController.binaryImageName = [FLEXUtility applicationImageName];
-
-                    return classesViewController;
-                };
-                break;
-
-            case FLEXGlobalsRowSystemLibraries: {
-                NSString *titleString = @"📚  System Libraries";
-                titleFuture = ^NSString *{
-                    return titleString;
-                };
-                viewControllerFuture = ^UIViewController *{
-                    FLEXLibrariesTableViewController *librariesViewController = [[FLEXLibrariesTableViewController alloc] init];
-                    librariesViewController.title = titleString;
-
-                    return librariesViewController;
-                };
-                break;
+        if (FLEXManagerDevReleaseMode == NO)
+        {
+            switch (defaultRowIndex) {
+                    case FLEXGlobalsRowAppClasses:
+                    titleFuture = ^NSString *{
+                        return [NSString stringWithFormat:@"📕  %@ Classes", [FLEXUtility applicationName]];
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        FLEXClassesTableViewController *classesViewController = [[FLEXClassesTableViewController alloc] init];
+                        classesViewController.binaryImageName = [FLEXUtility applicationImageName];
+                        
+                        return classesViewController;
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowSystemLibraries: {
+                        NSString *titleString = @"📚  System Libraries";
+                        titleFuture = ^NSString *{
+                            return titleString;
+                        };
+                        viewControllerFuture = ^UIViewController *{
+                            FLEXLibrariesTableViewController *librariesViewController = [[FLEXLibrariesTableViewController alloc] init];
+                            librariesViewController.title = titleString;
+                            
+                            return librariesViewController;
+                        };
+                        break;
+                    }
+                    
+                    case FLEXGlobalsRowLiveObjects:
+                    titleFuture = ^NSString *{
+                        return @"💩  Heap Objects";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        return [[FLEXLiveObjectsTableViewController alloc] init];
+                    };
+                    
+                    break;
+                    
+                    case FLEXGlobalsRowAppDelegate:
+                    titleFuture = ^NSString *{
+                        return [NSString stringWithFormat:@"👉  %@", [[[UIApplication sharedApplication] delegate] class]];
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        id <UIApplicationDelegate> appDelegate = [[UIApplication sharedApplication] delegate];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:appDelegate];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowRootViewController:
+                    titleFuture = ^NSString *{
+                        return [NSString stringWithFormat:@"🌴  %@", [[s_applicationWindow rootViewController] class]];
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        UIViewController *rootViewController = [s_applicationWindow rootViewController];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:rootViewController];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowUserDefaults:
+                    titleFuture = ^NSString *{
+                        return @"🚶  +[NSUserDefaults standardUserDefaults]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:standardUserDefaults];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowMainBundle:
+                    titleFuture = ^NSString *{
+                        return @"📦  +[NSBundle mainBundle]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        NSBundle *mainBundle = [NSBundle mainBundle];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:mainBundle];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowApplication:
+                    titleFuture = ^NSString *{
+                        return @"💾  +[UIApplication sharedApplication]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        UIApplication *sharedApplication = [UIApplication sharedApplication];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:sharedApplication];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowKeyWindow:
+                    titleFuture = ^NSString *{
+                        return @"🔑  -[UIApplication keyWindow]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:s_applicationWindow];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowMainScreen:
+                    titleFuture = ^NSString *{
+                        return @"💻  +[UIScreen mainScreen]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        UIScreen *mainScreen = [UIScreen mainScreen];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:mainScreen];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowCurrentDevice:
+                    titleFuture = ^NSString *{
+                        return @"📱  +[UIDevice currentDevice]";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        UIDevice *currentDevice = [UIDevice currentDevice];
+                        return [FLEXObjectExplorerFactory explorerViewControllerForObject:currentDevice];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsCookies:
+                    titleFuture = ^NSString *{
+                        return @"🍪  Cookies";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        return [[FLEXCookiesTableViewController alloc] init];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowFileBrowser:
+                    titleFuture = ^NSString *{
+                        return @"📁  File Browser";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        return [[FLEXFileBrowserTableViewController alloc] init];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowSystemLog:
+                    titleFuture = ^{
+                        return @"⚠️  System Log";
+                    };
+                    viewControllerFuture = ^{
+                        return [[FLEXSystemLogTableViewController alloc] init];
+                    };
+                    break;
+                    
+                    case FLEXGlobalsRowNetworkHistory:
+                    titleFuture = ^{
+                        return @"📡  Network History";
+                    };
+                    viewControllerFuture = ^{
+                        return [[FLEXNetworkHistoryTableViewController alloc] init];
+                    };
+                    break;
+                    case FLEXGlobalsRowCount:
+                    break;
             }
-
-            case FLEXGlobalsRowLiveObjects:
-                titleFuture = ^NSString *{
-                    return @"💩  Heap Objects";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    return [[FLEXLiveObjectsTableViewController alloc] init];
-                };
-
-                break;
-
-            case FLEXGlobalsRowAppDelegate:
-                titleFuture = ^NSString *{
-                    return [NSString stringWithFormat:@"👉  %@", [[[UIApplication sharedApplication] delegate] class]];
-                };
-                viewControllerFuture = ^UIViewController *{
-                    id <UIApplicationDelegate> appDelegate = [[UIApplication sharedApplication] delegate];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:appDelegate];
-                };
-                break;
-
-            case FLEXGlobalsRowRootViewController:
-                titleFuture = ^NSString *{
-                    return [NSString stringWithFormat:@"🌴  %@", [[s_applicationWindow rootViewController] class]];
-                };
-                viewControllerFuture = ^UIViewController *{
-                    UIViewController *rootViewController = [s_applicationWindow rootViewController];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:rootViewController];
-                };
-                break;
-
-            case FLEXGlobalsRowUserDefaults:
-                titleFuture = ^NSString *{
-                    return @"🚶  +[NSUserDefaults standardUserDefaults]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:standardUserDefaults];
-                };
-                break;
-
-            case FLEXGlobalsRowMainBundle:
-                titleFuture = ^NSString *{
-                    return @"📦  +[NSBundle mainBundle]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    NSBundle *mainBundle = [NSBundle mainBundle];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:mainBundle];
-                };
-                break;
-
-            case FLEXGlobalsRowApplication:
-                titleFuture = ^NSString *{
-                    return @"💾  +[UIApplication sharedApplication]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    UIApplication *sharedApplication = [UIApplication sharedApplication];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:sharedApplication];
-                };
-                break;
-
-            case FLEXGlobalsRowKeyWindow:
-                titleFuture = ^NSString *{
-                    return @"🔑  -[UIApplication keyWindow]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:s_applicationWindow];
-                };
-                break;
-
-            case FLEXGlobalsRowMainScreen:
-                titleFuture = ^NSString *{
-                    return @"💻  +[UIScreen mainScreen]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    UIScreen *mainScreen = [UIScreen mainScreen];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:mainScreen];
-                };
-                break;
-
-            case FLEXGlobalsRowCurrentDevice:
-                titleFuture = ^NSString *{
-                    return @"📱  +[UIDevice currentDevice]";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    UIDevice *currentDevice = [UIDevice currentDevice];
-                    return [FLEXObjectExplorerFactory explorerViewControllerForObject:currentDevice];
-                };
-                break;
-
-            case FLEXGlobalsCookies:
-                titleFuture = ^NSString *{
-                    return @"🍪  Cookies";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    return [[FLEXCookiesTableViewController alloc] init];
-                };
-                break;                
-                
-            case FLEXGlobalsRowFileBrowser:
-                titleFuture = ^NSString *{
-                    return @"📁  File Browser";
-                };
-                viewControllerFuture = ^UIViewController *{
-                    return [[FLEXFileBrowserTableViewController alloc] init];
-                };
-                break;
-
-            case FLEXGlobalsRowSystemLog:
-                titleFuture = ^{
-                    return @"⚠️  System Log";
-                };
-                viewControllerFuture = ^{
-                    return [[FLEXSystemLogTableViewController alloc] init];
-                };
-                break;
-
-            case FLEXGlobalsRowNetworkHistory:
-                titleFuture = ^{
-                    return @"📡  Network History";
-                };
-                viewControllerFuture = ^{
-                    return [[FLEXNetworkHistoryTableViewController alloc] init];
-                };
-                break;
-            case FLEXGlobalsRowCount:
-                break;
+        }
+        else
+        {
+            switch (defaultRowIndex) {
+                    case FLEXGlobalsRowFileBrowser:
+                    titleFuture = ^NSString *{
+                        return @"📁  File Browser";
+                    };
+                    viewControllerFuture = ^UIViewController *{
+                        return [[FLEXFileBrowserTableViewController alloc] init];
+                    };
+                    break;
+                    default:
+                    break;
+            }
         }
 
-        NSParameterAssert(titleFuture);
-        NSParameterAssert(viewControllerFuture);
-
-        [defaultGlobalEntries addObject:[FLEXGlobalsTableViewControllerEntry entryWithNameFuture:titleFuture viewControllerFuture:viewControllerFuture]];
+//        NSParameterAssert(titleFuture);
+//        NSParameterAssert(viewControllerFuture);
+        if (titleFuture)
+        {
+            [defaultGlobalEntries addObject:[FLEXGlobalsTableViewControllerEntry entryWithNameFuture:titleFuture viewControllerFuture:viewControllerFuture]];
+        }
     }
 
     return defaultGlobalEntries;
