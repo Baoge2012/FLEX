@@ -308,8 +308,8 @@
 {
     NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
     NSString *fullPath = [self filePathAtIndexPath:indexPath];
-
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fullPath] applicationActivities:nil];
+    NSURL *url = [NSURL fileURLWithPath: fullPath];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[url] applicationActivities:nil];
     [self presentViewController:activityViewController animated:true completion:nil];
 }
 
